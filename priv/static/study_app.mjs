@@ -10971,7 +10971,7 @@ function filtering_question_id(id_categorie_list, selected_category_ids, selecte
     }
   );
   _block$1 = map(_pipe$3, (c) => {
-    return c.category.id;
+    return c.id;
   });
   let filtered_questions = _block$1;
   let _block$2;
@@ -11078,7 +11078,7 @@ function update5(model, msg) {
       none2()
     ];
   } else if (msg instanceof ViewHistory) {
-    echo("View History", "src/pages/quiz_home.gleam", 189);
+    echo("View History", "src/pages/quiz_home.gleam", 179);
     return [
       (() => {
         let _record = model;
@@ -11100,7 +11100,7 @@ function update5(model, msg) {
     ];
   } else if (msg instanceof GetCategories) {
     let categories = msg[0];
-    echo("GetCategories", "src/pages/quiz_home.gleam", 196);
+    echo("GetCategories", "src/pages/quiz_home.gleam", 186);
     let new_selected_category = map(
       categories,
       (_capture) => {
@@ -11128,7 +11128,7 @@ function update5(model, msg) {
     ];
   } else if (msg instanceof GetQuestionIdAndCategoryList) {
     let id_and_category_list = msg[0];
-    echo("GetQuestionIdAndCategoryList", "src/pages/quiz_home.gleam", 211);
+    echo("GetQuestionIdAndCategoryList", "src/pages/quiz_home.gleam", 201);
     return [
       (() => {
         let _record = model;
@@ -11152,7 +11152,7 @@ function update5(model, msg) {
     ];
   } else if (msg instanceof GetQuizHistory) {
     let history = msg[0];
-    echo("GetQuizHistory", "src/pages/quiz_home.gleam", 223);
+    echo("GetQuizHistory", "src/pages/quiz_home.gleam", 213);
     return [
       (() => {
         let _record = model;
@@ -11173,7 +11173,7 @@ function update5(model, msg) {
       none2()
     ];
   } else if (msg instanceof StartQuiz) {
-    echo("Start Quiz", "src/pages/quiz_home.gleam", 178);
+    echo("Start Quiz", "src/pages/quiz_home.gleam", 222);
     let eff = to_effect(
       getQuestionByIds(model.db, model.selected_question_ids),
       get_question_by_ids_decode,
@@ -11193,7 +11193,7 @@ function update5(model, msg) {
     return [model, none2()];
   } else {
     let json_err = msg[0];
-    echo("err screen", "src/pages/quiz_home.gleam", 228);
+    echo("err screen", "src/pages/quiz_home.gleam", 218);
     return [
       (() => {
         let _record = model;
@@ -11594,6 +11594,10 @@ var OutCome2 = class extends CustomType {
 var GoToResultScreen = class extends CustomType {
 };
 function init2(db, questions) {
+  let _pipe = map(questions, (q) => {
+    return q.id;
+  });
+  echo2(_pipe, "src/pages/quiz_screen.gleam", 64);
   let $ = is_empty2(questions);
   if ($) {
     return new Error(void 0);
@@ -11718,11 +11722,22 @@ function view_question(model) {
     let current_question = $[0];
     let progress = "Question " + to_string(
       model.current_question_index + 1
-    ) + " of " + to_string(length(model.questions));
+    ) + " / " + to_string(length(model.questions));
     return div(
       toList([]),
       toList([
         h2(toList([]), toList([text3(progress)])),
+        h3(
+          toList([styles(toList([["display", "flex"]]))]),
+          toList([
+            text3("category:" + current_question.category.name),
+            div(
+              toList([styles(toList([["width", "2rem"]]))]),
+              toList([])
+            ),
+            text3("id:" + to_string(current_question.id))
+          ])
+        ),
         p(
           toList([]),
           toList([text3(current_question.question_text)])
@@ -11800,151 +11815,6 @@ function view5(model) {
   } else {
     return view_question(model);
   }
-}
-
-// build/dev/javascript/study_app/pages/result_screen.mjs
-var Model6 = class extends CustomType {
-  constructor(db, score, total_questions, quiz_result, history) {
-    super();
-    this.db = db;
-    this.score = score;
-    this.total_questions = total_questions;
-    this.quiz_result = quiz_result;
-    this.history = history;
-  }
-};
-var GetHistory = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var Err = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var SaveHistory = class extends CustomType {
-};
-var GoToHome = class extends CustomType {
-};
-var OutCome3 = class extends CustomType {
-};
-function init3(db, score, total_questions, quiz_result) {
-  let eff = to_effect(
-    getQuizHistory(db),
-    decode_quiz_historys,
-    (var0) => {
-      return new GetHistory(var0);
-    },
-    (var0) => {
-      return new Err(var0);
-    }
-  );
-  return [new Model6(db, score, total_questions, quiz_result, toList([])), eff];
-}
-function update7(model, msg) {
-  if (msg instanceof GetHistory) {
-    let history = msg[0];
-    echo2("GetHistory", "src/pages/result_screen.gleam", 63);
-    let new_history = update_from_quiz_results(
-      history,
-      model.quiz_result
-    );
-    return [
-      (() => {
-        let _record = model;
-        return new Model6(
-          _record.db,
-          _record.score,
-          _record.total_questions,
-          _record.quiz_result,
-          new_history
-        );
-      })(),
-      none2()
-    ];
-  } else if (msg instanceof Err) {
-    let json_err = msg[0];
-    echo2("err screen", "src/pages/result_screen.gleam", 69);
-    echo2(json_err, "src/pages/result_screen.gleam", 70);
-    return [model, none2()];
-  } else if (msg instanceof SaveHistory) {
-    echo2("SaveHistory", "src/pages/result_screen.gleam", 74);
-    return [model, none2()];
-  } else if (msg instanceof GoToHome) {
-    echo2("GoToHome", "src/pages/result_screen.gleam", 78);
-    let _block;
-    let _pipe = model.history;
-    let _pipe$1 = to_json7(_pipe);
-    let _pipe$2 = ((_capture) => {
-      return saveQuizHistory(model.db, _capture);
-    })(_pipe$1);
-    _block = to_effect_no_decode(
-      _pipe$2,
-      (a) => {
-        return new OutCome3();
-      }
-    );
-    let eff = _block;
-    return [model, eff];
-  } else {
-    echo2("result -> home", "src/pages/result_screen.gleam", 88);
-    return [model, none2()];
-  }
-}
-function view_answers(quiz_result) {
-  return ul(
-    toList([]),
-    map(
-      quiz_result,
-      (record) => {
-        let _block;
-        let $ = record.answer;
-        if ($ instanceof Correct) {
-          _block = "\u25CB";
-        } else if ($ instanceof Incorrect) {
-          _block = "\u2716";
-        } else {
-          _block = "-";
-        }
-        let status_text = _block;
-        return li(
-          toList([]),
-          toList([text3(to_string(record.id) + ": " + status_text)])
-        );
-      }
-    )
-  );
-}
-function view6(model) {
-  return div(
-    toList([]),
-    toList([
-      h2(toList([]), toList([text3("Quiz Results")])),
-      p(
-        toList([]),
-        toList([
-          text3(
-            "Your score: " + to_string(model.score) + "/" + to_string(
-              model.total_questions
-            )
-          )
-        ])
-      ),
-      button(
-        toList([on_click(new GoToHome())]),
-        toList([text3("Go to Home")])
-      ),
-      h3(toList([]), toList([text3("Detailed Results:")])),
-      view_answers(model.quiz_result),
-      button(
-        toList([on_click(new GoToHome())]),
-        toList([text3("Go to Home")])
-      )
-    ])
-  );
 }
 function echo2(value2, file, line) {
   const grey = "\x1B[90m";
@@ -12083,6 +11953,287 @@ function echo$isDict2(value2) {
   }
 }
 
+// build/dev/javascript/study_app/pages/result_screen.mjs
+var Model6 = class extends CustomType {
+  constructor(db, score, total_questions, quiz_result, history) {
+    super();
+    this.db = db;
+    this.score = score;
+    this.total_questions = total_questions;
+    this.quiz_result = quiz_result;
+    this.history = history;
+  }
+};
+var GetHistory = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var Err = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var SaveHistory = class extends CustomType {
+};
+var GoToHome = class extends CustomType {
+};
+var OutCome3 = class extends CustomType {
+};
+function init3(db, score, total_questions, quiz_result) {
+  let eff = to_effect(
+    getQuizHistory(db),
+    decode_quiz_historys,
+    (var0) => {
+      return new GetHistory(var0);
+    },
+    (var0) => {
+      return new Err(var0);
+    }
+  );
+  return [new Model6(db, score, total_questions, quiz_result, toList([])), eff];
+}
+function update7(model, msg) {
+  if (msg instanceof GetHistory) {
+    let history = msg[0];
+    echo3("GetHistory", "src/pages/result_screen.gleam", 63);
+    let new_history = update_from_quiz_results(
+      history,
+      model.quiz_result
+    );
+    return [
+      (() => {
+        let _record = model;
+        return new Model6(
+          _record.db,
+          _record.score,
+          _record.total_questions,
+          _record.quiz_result,
+          new_history
+        );
+      })(),
+      none2()
+    ];
+  } else if (msg instanceof Err) {
+    let json_err = msg[0];
+    echo3("err screen", "src/pages/result_screen.gleam", 69);
+    echo3(json_err, "src/pages/result_screen.gleam", 70);
+    return [model, none2()];
+  } else if (msg instanceof SaveHistory) {
+    echo3("SaveHistory", "src/pages/result_screen.gleam", 74);
+    return [model, none2()];
+  } else if (msg instanceof GoToHome) {
+    echo3("GoToHome", "src/pages/result_screen.gleam", 78);
+    let _block;
+    let _pipe = model.history;
+    let _pipe$1 = to_json7(_pipe);
+    let _pipe$2 = ((_capture) => {
+      return saveQuizHistory(model.db, _capture);
+    })(_pipe$1);
+    _block = to_effect_no_decode(
+      _pipe$2,
+      (a) => {
+        return new OutCome3();
+      }
+    );
+    let eff = _block;
+    return [model, eff];
+  } else {
+    echo3("result -> home", "src/pages/result_screen.gleam", 88);
+    return [model, none2()];
+  }
+}
+function view_answers(quiz_result) {
+  return ul(
+    toList([]),
+    map(
+      quiz_result,
+      (record) => {
+        let _block;
+        let $ = record.answer;
+        if ($ instanceof Correct) {
+          _block = "\u25CB";
+        } else if ($ instanceof Incorrect) {
+          _block = "\u2716";
+        } else {
+          _block = "-";
+        }
+        let status_text = _block;
+        return li(
+          toList([]),
+          toList([text3(to_string(record.id) + ": " + status_text)])
+        );
+      }
+    )
+  );
+}
+function view6(model) {
+  return div(
+    toList([]),
+    toList([
+      h2(toList([]), toList([text3("Quiz Results")])),
+      p(
+        toList([]),
+        toList([
+          text3(
+            "Your score: " + to_string(model.score) + "/" + to_string(
+              model.total_questions
+            )
+          )
+        ])
+      ),
+      button(
+        toList([on_click(new GoToHome())]),
+        toList([text3("Go to Home")])
+      ),
+      h3(toList([]), toList([text3("Detailed Results:")])),
+      view_answers(model.quiz_result),
+      button(
+        toList([on_click(new GoToHome())]),
+        toList([text3("Go to Home")])
+      )
+    ])
+  );
+}
+function echo3(value2, file, line) {
+  const grey = "\x1B[90m";
+  const reset_color = "\x1B[39m";
+  const file_line = `${file}:${line}`;
+  const string_value = echo$inspect3(value2);
+  if (globalThis.process?.stderr?.write) {
+    const string5 = `${grey}${file_line}${reset_color}
+${string_value}
+`;
+    process.stderr.write(string5);
+  } else if (globalThis.Deno) {
+    const string5 = `${grey}${file_line}${reset_color}
+${string_value}
+`;
+    globalThis.Deno.stderr.writeSync(new TextEncoder().encode(string5));
+  } else {
+    const string5 = `${file_line}
+${string_value}`;
+    globalThis.console.log(string5);
+  }
+  return value2;
+}
+function echo$inspectString3(str) {
+  let new_str = '"';
+  for (let i = 0; i < str.length; i++) {
+    let char = str[i];
+    if (char == "\n") new_str += "\\n";
+    else if (char == "\r") new_str += "\\r";
+    else if (char == "	") new_str += "\\t";
+    else if (char == "\f") new_str += "\\f";
+    else if (char == "\\") new_str += "\\\\";
+    else if (char == '"') new_str += '\\"';
+    else if (char < " " || char > "~" && char < "\xA0") {
+      new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
+    } else {
+      new_str += char;
+    }
+  }
+  new_str += '"';
+  return new_str;
+}
+function echo$inspectDict3(map7) {
+  let body = "dict.from_list([";
+  let first = true;
+  let key_value_pairs = [];
+  map7.forEach((value2, key) => {
+    key_value_pairs.push([key, value2]);
+  });
+  key_value_pairs.sort();
+  key_value_pairs.forEach(([key, value2]) => {
+    if (!first) body = body + ", ";
+    body = body + "#(" + echo$inspect3(key) + ", " + echo$inspect3(value2) + ")";
+    first = false;
+  });
+  return body + "])";
+}
+function echo$inspectCustomType3(record) {
+  const props = globalThis.Object.keys(record).map((label2) => {
+    const value2 = echo$inspect3(record[label2]);
+    return isNaN(parseInt(label2)) ? `${label2}: ${value2}` : value2;
+  }).join(", ");
+  return props ? `${record.constructor.name}(${props})` : record.constructor.name;
+}
+function echo$inspectObject3(v) {
+  const name2 = Object.getPrototypeOf(v)?.constructor?.name || "Object";
+  const props = [];
+  for (const k of Object.keys(v)) {
+    props.push(`${echo$inspect3(k)}: ${echo$inspect3(v[k])}`);
+  }
+  const body = props.length ? " " + props.join(", ") + " " : "";
+  const head = name2 === "Object" ? "" : name2 + " ";
+  return `//js(${head}{${body}})`;
+}
+function echo$inspect3(v) {
+  const t = typeof v;
+  if (v === true) return "True";
+  if (v === false) return "False";
+  if (v === null) return "//js(null)";
+  if (v === void 0) return "Nil";
+  if (t === "string") return echo$inspectString3(v);
+  if (t === "bigint" || t === "number") return v.toString();
+  if (globalThis.Array.isArray(v))
+    return `#(${v.map(echo$inspect3).join(", ")})`;
+  if (v instanceof List)
+    return `[${v.toArray().map(echo$inspect3).join(", ")}]`;
+  if (v instanceof UtfCodepoint)
+    return `//utfcodepoint(${String.fromCodePoint(v.value)})`;
+  if (v instanceof BitArray) return echo$inspectBitArray3(v);
+  if (v instanceof CustomType) return echo$inspectCustomType3(v);
+  if (echo$isDict3(v)) return echo$inspectDict3(v);
+  if (v instanceof Set)
+    return `//js(Set(${[...v].map(echo$inspect3).join(", ")}))`;
+  if (v instanceof RegExp) return `//js(${v})`;
+  if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
+  if (v instanceof Function) {
+    const args = [];
+    for (const i of Array(v.length).keys())
+      args.push(String.fromCharCode(i + 97));
+    return `//fn(${args.join(", ")}) { ... }`;
+  }
+  return echo$inspectObject3(v);
+}
+function echo$inspectBitArray3(bitArray) {
+  let endOfAlignedBytes = bitArray.bitOffset + 8 * Math.trunc(bitArray.bitSize / 8);
+  let alignedBytes = bitArraySlice(
+    bitArray,
+    bitArray.bitOffset,
+    endOfAlignedBytes
+  );
+  let remainingUnalignedBits = bitArray.bitSize % 8;
+  if (remainingUnalignedBits > 0) {
+    let remainingBits = bitArraySliceToInt(
+      bitArray,
+      endOfAlignedBytes,
+      bitArray.bitSize,
+      false,
+      false
+    );
+    let alignedBytesArray = Array.from(alignedBytes.rawBuffer);
+    let suffix = `${remainingBits}:size(${remainingUnalignedBits})`;
+    if (alignedBytesArray.length === 0) {
+      return `<<${suffix}>>`;
+    } else {
+      return `<<${Array.from(alignedBytes.rawBuffer).join(", ")}, ${suffix}>>`;
+    }
+  } else {
+    return `<<${Array.from(alignedBytes.rawBuffer).join(", ")}>>`;
+  }
+}
+function echo$isDict3(value2) {
+  try {
+    return value2 instanceof Dict;
+  } catch {
+    return false;
+  }
+}
+
 // build/dev/javascript/study_app/study_app.mjs
 var FILEPATH = "src/study_app.gleam";
 var Loading = class extends CustomType {
@@ -12135,7 +12286,7 @@ function update8(model, msg) {
   if (model instanceof Loading) {
     if (msg instanceof DataInitialized) {
       let db = msg[0];
-      echo3("DataInitialized", "src/study_app.gleam", 48);
+      echo4("DataInitialized", "src/study_app.gleam", 48);
       let $ = init(db);
       let home_model = $[0];
       let home_effect = $[1];
@@ -12157,7 +12308,7 @@ function update8(model, msg) {
       let home_effect = $[1];
       if (home_msg instanceof OutCome) {
         let questions = home_msg[0];
-        echo3("Home -> QuizScreen", "src/study_app.gleam", 64);
+        echo4("Home -> QuizScreen", "src/study_app.gleam", 64);
         let screen_ini = init2(new_home.db, questions);
         if (screen_ini instanceof Ok) {
           let quiz_model = screen_ini[0];
@@ -12304,11 +12455,11 @@ function main() {
   }
   return void 0;
 }
-function echo3(value2, file, line) {
+function echo4(value2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const string_value = echo$inspect3(value2);
+  const string_value = echo$inspect4(value2);
   if (globalThis.process?.stderr?.write) {
     const string5 = `${grey}${file_line}${reset_color}
 ${string_value}
@@ -12326,7 +12477,7 @@ ${string_value}`;
   }
   return value2;
 }
-function echo$inspectString3(str) {
+function echo$inspectString4(str) {
   let new_str = '"';
   for (let i = 0; i < str.length; i++) {
     let char = str[i];
@@ -12345,7 +12496,7 @@ function echo$inspectString3(str) {
   new_str += '"';
   return new_str;
 }
-function echo$inspectDict3(map7) {
+function echo$inspectDict4(map7) {
   let body = "dict.from_list([";
   let first = true;
   let key_value_pairs = [];
@@ -12355,47 +12506,47 @@ function echo$inspectDict3(map7) {
   key_value_pairs.sort();
   key_value_pairs.forEach(([key, value2]) => {
     if (!first) body = body + ", ";
-    body = body + "#(" + echo$inspect3(key) + ", " + echo$inspect3(value2) + ")";
+    body = body + "#(" + echo$inspect4(key) + ", " + echo$inspect4(value2) + ")";
     first = false;
   });
   return body + "])";
 }
-function echo$inspectCustomType3(record) {
+function echo$inspectCustomType4(record) {
   const props = globalThis.Object.keys(record).map((label2) => {
-    const value2 = echo$inspect3(record[label2]);
+    const value2 = echo$inspect4(record[label2]);
     return isNaN(parseInt(label2)) ? `${label2}: ${value2}` : value2;
   }).join(", ");
   return props ? `${record.constructor.name}(${props})` : record.constructor.name;
 }
-function echo$inspectObject3(v) {
+function echo$inspectObject4(v) {
   const name2 = Object.getPrototypeOf(v)?.constructor?.name || "Object";
   const props = [];
   for (const k of Object.keys(v)) {
-    props.push(`${echo$inspect3(k)}: ${echo$inspect3(v[k])}`);
+    props.push(`${echo$inspect4(k)}: ${echo$inspect4(v[k])}`);
   }
   const body = props.length ? " " + props.join(", ") + " " : "";
   const head = name2 === "Object" ? "" : name2 + " ";
   return `//js(${head}{${body}})`;
 }
-function echo$inspect3(v) {
+function echo$inspect4(v) {
   const t = typeof v;
   if (v === true) return "True";
   if (v === false) return "False";
   if (v === null) return "//js(null)";
   if (v === void 0) return "Nil";
-  if (t === "string") return echo$inspectString3(v);
+  if (t === "string") return echo$inspectString4(v);
   if (t === "bigint" || t === "number") return v.toString();
   if (globalThis.Array.isArray(v))
-    return `#(${v.map(echo$inspect3).join(", ")})`;
+    return `#(${v.map(echo$inspect4).join(", ")})`;
   if (v instanceof List)
-    return `[${v.toArray().map(echo$inspect3).join(", ")}]`;
+    return `[${v.toArray().map(echo$inspect4).join(", ")}]`;
   if (v instanceof UtfCodepoint)
     return `//utfcodepoint(${String.fromCodePoint(v.value)})`;
-  if (v instanceof BitArray) return echo$inspectBitArray3(v);
-  if (v instanceof CustomType) return echo$inspectCustomType3(v);
-  if (echo$isDict3(v)) return echo$inspectDict3(v);
+  if (v instanceof BitArray) return echo$inspectBitArray4(v);
+  if (v instanceof CustomType) return echo$inspectCustomType4(v);
+  if (echo$isDict4(v)) return echo$inspectDict4(v);
   if (v instanceof Set)
-    return `//js(Set(${[...v].map(echo$inspect3).join(", ")}))`;
+    return `//js(Set(${[...v].map(echo$inspect4).join(", ")}))`;
   if (v instanceof RegExp) return `//js(${v})`;
   if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
   if (v instanceof Function) {
@@ -12404,9 +12555,9 @@ function echo$inspect3(v) {
       args.push(String.fromCharCode(i + 97));
     return `//fn(${args.join(", ")}) { ... }`;
   }
-  return echo$inspectObject3(v);
+  return echo$inspectObject4(v);
 }
-function echo$inspectBitArray3(bitArray) {
+function echo$inspectBitArray4(bitArray) {
   let endOfAlignedBytes = bitArray.bitOffset + 8 * Math.trunc(bitArray.bitSize / 8);
   let alignedBytes = bitArraySlice(
     bitArray,
@@ -12433,7 +12584,7 @@ function echo$inspectBitArray3(bitArray) {
     return `<<${Array.from(alignedBytes.rawBuffer).join(", ")}>>`;
   }
 }
-function echo$isDict3(value2) {
+function echo$isDict4(value2) {
   try {
     return value2 instanceof Dict;
   } catch {
