@@ -1602,6 +1602,25 @@ function find2(loop$list, loop$is_desired) {
     }
   }
 }
+function any(loop$list, loop$predicate) {
+  while (true) {
+    let list4 = loop$list;
+    let predicate = loop$predicate;
+    if (list4 instanceof Empty) {
+      return false;
+    } else {
+      let first$1 = list4.head;
+      let rest$1 = list4.tail;
+      let $ = predicate(first$1);
+      if ($) {
+        return true;
+      } else {
+        loop$list = rest$1;
+        loop$predicate = predicate;
+      }
+    }
+  }
+}
 function sequences(loop$list, loop$compare, loop$growing, loop$direction, loop$prev, loop$acc) {
   while (true) {
     let list4 = loop$list;
@@ -10868,6 +10887,12 @@ var SwitchShuffle = class extends CustomType {
     this[0] = $0;
   }
 };
+var SWitchAllCategory = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
 var ViewHistory = class extends CustomType {
 };
 var GetCategories = class extends CustomType {
@@ -11077,8 +11102,41 @@ function update5(model, msg) {
       })(),
       none2()
     ];
+  } else if (msg instanceof SWitchAllCategory) {
+    let is_selected = msg[0];
+    let new_select_category = map(
+      model.selected_category,
+      (c) => {
+        return new SelectedCategory(is_selected, c.category);
+      }
+    );
+    let new_question_ids = filtering_question_id(
+      model.question_id_categories,
+      new_select_category,
+      model.selected_count,
+      model.shuffle_or_not
+    );
+    return [
+      (() => {
+        let _record = model;
+        return new Model4(
+          _record.db,
+          _record.categories,
+          _record.question_id_categories,
+          _record.shuffle_or_not,
+          new_select_category,
+          _record.selected_count,
+          new_question_ids,
+          _record.loading,
+          _record.error,
+          _record.history,
+          _record.show_history
+        );
+      })(),
+      none2()
+    ];
   } else if (msg instanceof ViewHistory) {
-    echo("View History", "src/pages/quiz_home.gleam", 179);
+    echo("View History", "src/pages/quiz_home.gleam", 204);
     return [
       (() => {
         let _record = model;
@@ -11100,7 +11158,7 @@ function update5(model, msg) {
     ];
   } else if (msg instanceof GetCategories) {
     let categories = msg[0];
-    echo("GetCategories", "src/pages/quiz_home.gleam", 186);
+    echo("GetCategories", "src/pages/quiz_home.gleam", 211);
     let new_selected_category = map(
       categories,
       (_capture) => {
@@ -11128,7 +11186,7 @@ function update5(model, msg) {
     ];
   } else if (msg instanceof GetQuestionIdAndCategoryList) {
     let id_and_category_list = msg[0];
-    echo("GetQuestionIdAndCategoryList", "src/pages/quiz_home.gleam", 201);
+    echo("GetQuestionIdAndCategoryList", "src/pages/quiz_home.gleam", 226);
     return [
       (() => {
         let _record = model;
@@ -11152,7 +11210,7 @@ function update5(model, msg) {
     ];
   } else if (msg instanceof GetQuizHistory) {
     let history = msg[0];
-    echo("GetQuizHistory", "src/pages/quiz_home.gleam", 213);
+    echo("GetQuizHistory", "src/pages/quiz_home.gleam", 238);
     return [
       (() => {
         let _record = model;
@@ -11173,7 +11231,7 @@ function update5(model, msg) {
       none2()
     ];
   } else if (msg instanceof StartQuiz) {
-    echo("Start Quiz", "src/pages/quiz_home.gleam", 222);
+    echo("Start Quiz", "src/pages/quiz_home.gleam", 247);
     let eff = to_effect(
       getQuestionByIds(model.db, model.selected_question_ids),
       get_question_by_ids_decode,
@@ -11193,7 +11251,7 @@ function update5(model, msg) {
     return [model, none2()];
   } else {
     let json_err = msg[0];
-    echo("err screen", "src/pages/quiz_home.gleam", 218);
+    echo("err screen", "src/pages/quiz_home.gleam", 243);
     return [
       (() => {
         let _record = model;
@@ -11245,9 +11303,41 @@ function view_shuffle(shuffle2) {
     ])
   );
 }
+function view_all_category_selection(checked2) {
+  return div(
+    toList([
+      styles(
+        toList([
+          ["padding", "0.5rem"],
+          ["border-radius", "0.5rem"],
+          ["background-color", "#f0f0f0"],
+          ["display", "inline-flex"],
+          ["align-items", "center"],
+          ["cursor", "pointer"],
+          ["box-shadow", "0 2px 4px rgba(0, 0, 0, 0.1)"],
+          ["transition", "background-color 0.3s ease"]
+        ])
+      )
+    ]),
+    toList([
+      input(
+        toList([
+          type_("checkbox"),
+          checked(checked2),
+          on_check(
+            (checked3) => {
+              return new SWitchAllCategory(checked3);
+            }
+          )
+        ])
+      ),
+      label(toList([]), toList([text3("switch all select")]))
+    ])
+  );
+}
 function view_category_selection(selected_categories) {
   return div(
-    toList([styles(toList([]))]),
+    toList([styles(toList([["margin-left", "1rem"]]))]),
     map(
       selected_categories,
       (c) => {
@@ -11400,6 +11490,15 @@ function view_actions(is_start_quiz_enabled, show_history, history) {
 }
 function view4(model) {
   let is_start_quiz_enabled = length(model.selected_question_ids) > 0;
+  let _block;
+  let _pipe = map(
+    model.selected_category,
+    (c) => {
+      return c.is_selected;
+    }
+  );
+  _block = any(_pipe, identity2);
+  let checked2 = _block;
   let qty = length(model.selected_question_ids);
   return div(
     toList([]),
@@ -11407,6 +11506,7 @@ function view4(model) {
       h1(toList([]), toList([text3("Quiz App")])),
       view_error(model.error),
       h2(toList([]), toList([text3("\u30AB\u30C6\u30B4\u30EA")])),
+      view_all_category_selection(checked2),
       view_category_selection(model.selected_category),
       h2(toList([]), toList([text3("shuffle")])),
       view_shuffle(model.shuffle_or_not),
