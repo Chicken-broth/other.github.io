@@ -1,17 +1,263 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>🚧 app</title>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DX推進ページ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            margin: 0;
+            display: flex;
+        }
+        nav {
+            width: 250px;
+            border-right: 1px solid #ccc;
+            padding: 20px;
+            height: 100vh;
+            background-color: #f8f9fa;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+        }
+        nav ul li a {
+            display: block;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #333;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        nav ul li a.active {
+            background-color: #0F766E;
+            color: white;
+        }
+        main {
+            padding: 20px;
+            width: calc(100% - 290px);
+            overflow-y: auto;
+            height: 100vh;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        /* Process page specific styles */
+        .tab-button.active {
+            background-color: #0D9488; /* teal-600 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        /* Technology and Systems page specific styles */
+        .tab-button-edu.active {
+            background-color: #0D9488; /* teal-600 */
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#" data-page="home">Home</a></li>
+            <li><a href="#" data-page="communication">Communication</a></li>
+            <li><a href="#" data-page="process">Process</a></li>
+            <li><a href="#" data-page="roadmap">Roadmap</a></li>
+            <li><a href="#" data-page="technology_and_systems">Technology and Systems</a></li>
+            <li><a href="#" data-page="questions">Questions</a></li>
+        </ul>
+    </nav>
+    <main id="content">
+        <!-- コンテンツはここに表示されます -->
+    </main>
 
-    <!-- Uncomment this if you use the TailwindCSS integration -->
-    <!-- <link rel="stylesheet" href="/priv/static/app.css"> -->
-    <script type="module" src="/other.github.io/priv/static/study_app.mjs"></script>
-  </head>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('nav a');
+            const content = document.getElementById('content');
 
-  <body>
-    <div id="app"></div>
-  </body>
+            const initializePageScripts = (pageName) => {
+                // Common scripts (e.g., mobile menu, accordions)
+                const mobileMenuButton = document.getElementById('mobile-menu-button');
+                if (mobileMenuButton) {
+                    const mobileMenu = document.getElementById('mobile-menu');
+                    mobileMenuButton.addEventListener('click', () => {
+                        mobileMenu.classList.toggle('hidden');
+                    });
+                }
+
+                document.querySelectorAll('.accordion-header').forEach(header => {
+                    header.addEventListener('click', () => {
+                        const content = header.nextElementSibling;
+                        const icon = header.querySelector('.accordion-icon');
+                        
+                        if (content.style.maxHeight) {
+                            content.style.maxHeight = null;
+                            icon.classList.remove('rotate-45');
+                        } else {
+                            document.querySelectorAll('.accordion-content').forEach(c => c.style.maxHeight = null);
+                            document.querySelectorAll('.accordion-icon').forEach(i => i.classList.remove('rotate-45'));
+                            content.style.maxHeight = content.scrollHeight + "px";
+                            icon.classList.add('rotate-45');
+                        }
+                    });
+                });
+
+                // Page-specific scripts
+                if (pageName === 'process') {
+                    const tabs = document.querySelectorAll('.tab-button');
+                    const phaseContents = document.querySelectorAll('.phase-content');
+
+                    tabs.forEach(tab => {
+                        tab.addEventListener('click', () => {
+                            tabs.forEach(t => t.classList.remove('active'));
+                            tab.classList.add('active');
+
+                            const targetPhase = tab.getAttribute('data-phase');
+                            phaseContents.forEach(content => {
+                                if (content.id === targetPhase) {
+                                    content.classList.remove('hidden');
+                                } else {
+                                    content.classList.add('hidden');
+                                }
+                            });
+                        });
+                    });
+
+                    const chartOptions = {
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                                grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                                pointLabels: { font: { size: 14 }, color: '#334155' },
+                                ticks: { backdropColor: 'rgba(255, 255, 255, 0.75)', color: '#64748b', stepSize: 25 },
+                                suggestedMin: 0,
+                                suggestedMax: 100
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(tooltipItems) {
+                                        const item = tooltipItems[0];
+                                        let label = item.chart.data.labels[item.dataIndex];
+                                        if (Array.isArray(label)) {
+                                          return label.join(' ');
+                                        } else {
+                                          return label;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    };
+
+                    const chartLabels = ['戦略・ビジョン', '実行・プロジェクト', '文化・育成'];
+                    const chartColors = {
+                        backgroundColor: 'rgba(13, 148, 136, 0.2)', // teal-600
+                        borderColor: 'rgba(13, 148, 136, 1)',
+                        pointBackgroundColor: 'rgba(13, 148, 136, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(13, 148, 136, 1)'
+                    };
+
+                    new Chart(document.getElementById('phase1Chart'), {
+                        type: 'radar',
+                        data: {
+                            labels: chartLabels,
+                            datasets: [{ ...chartColors, label: 'フェーズ1', data: [90, 30, 50] }]
+                        },
+                        options: chartOptions
+                    });
+
+                    new Chart(document.getElementById('phase2Chart'), {
+                        type: 'radar',
+                        data: {
+                            labels: chartLabels,
+                            datasets: [{ ...chartColors, label: 'フェーズ2', data: [50, 90, 80] }]
+                        },
+                        options: chartOptions
+                    });
+
+                    new Chart(document.getElementById('phase3Chart'), {
+                        type: 'radar',
+                        data: {
+                            labels: chartLabels,
+                            datasets: [{ ...chartColors, label: 'フェーズ3', data: [40, 80, 95] }]
+                        },
+                        options: chartOptions
+                    });
+                }
+
+                if (pageName === 'technology_and_systems') {
+                    const eduTabs = document.querySelectorAll('.tab-button-edu');
+                    const eduContents = document.querySelectorAll('.tab-content-edu');
+
+                    eduTabs.forEach(tab => {
+                        tab.addEventListener('click', () => {
+                            eduTabs.forEach(t => t.classList.remove('active'));
+                            tab.classList.add('active');
+
+                            const targetId = tab.getAttribute('data-target');
+                            eduContents.forEach(content => {
+                                if (content.id === targetId) {
+                                    content.classList.remove('hidden');
+                                } else {
+                                    content.classList.add('hidden');
+                                }
+                            });
+                            
+                            const accordionContent = tab.closest('.accordion-content');
+                            if (accordionContent) {
+                                accordionContent.style.maxHeight = accordionContent.scrollHeight + "px";
+                            }
+                        });
+                    });
+                }
+            };
+
+            const loadContent = async (page) => {
+                try {
+                    const response = await fetch(`./page/${page}/index.html`);
+                    if (!response.ok) {
+                        throw new Error('ページの読み込みに失敗しました。');
+                    }
+                    const html = await response.text();
+                    content.innerHTML = html;
+                    initializePageScripts(page); // Pass the page name to initializePageScripts
+                } catch (error) {
+                    content.innerHTML = `<p>${error.message}</p>`;
+                }
+            };
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = e.target.dataset.page;
+
+                    navLinks.forEach(link => link.classList.remove('active'));
+                    e.target.classList.add('active');
+
+                    loadContent(page);
+                });
+            });
+
+            // 初期ページの読み込み
+            const initialPage = 'home';
+            document.querySelector(`nav a[data-page="${initialPage}"]`).classList.add('active');
+            loadContent(initialPage);
+        });
+    </script>
+</body>
 </html>
