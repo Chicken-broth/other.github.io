@@ -15,16 +15,19 @@
         body {
             font-family: 'Noto Sans JP', sans-serif;
             margin: 0;
-            display: flex;
-            transition: padding-left 0.3s ease-in-out;
+            /* display: flex; を削除 */
         }
         nav#sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 250px;
             border-right: 1px solid #ccc;
             padding: 20px;
             height: 100vh;
             background-color: #f8f9fa;
             transition: transform 0.3s ease-in-out;
+            z-index: 99; /* toggleボタンより下 */
         }
         nav ul {
             list-style: none;
@@ -43,15 +46,16 @@
             color: white;
         }
         main#content {
+            margin-left: 250px; /* サイドバーの幅 */
             padding: 20px;
-            width: 100%;
             overflow-y: auto;
             height: 100vh;
+            transition: margin-left 0.3s ease-in-out;
         }
         #sidebar-toggle {
             position: fixed;
             top: 16px;
-            left: 220px; /* sidebar width - button width/2 - padding */
+            left: 234px; /* 250px - 16px */
             z-index: 100;
             background-color: #0F766E;
             color: white;
@@ -86,7 +90,10 @@
             transform: translateX(-250px);
         }
         body.sidebar-closed #sidebar-toggle {
-            left: 16px;
+            left: 10px;
+        }
+        body.sidebar-closed main#content {
+            margin-left: 0;
         }
     </style>
 </head>
@@ -104,7 +111,7 @@
             <li><a href="#" data-page="checklist">Check list</a></li>
         </ul>
     </nav>
-    <main id="content" class="flex-grow">
+    <main id="content">
         <!-- コンテンツはここに表示されます -->
     </main>
 
@@ -113,13 +120,16 @@
             const navLinks = document.querySelectorAll('nav a');
             const content = document.getElementById('content');
             const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.getElementById('sidebar');
 
             sidebarToggle.addEventListener('click', () => {
                 document.body.classList.toggle('sidebar-closed');
                 if (document.body.classList.contains('sidebar-closed')) {
                     sidebarToggle.innerHTML = '&gt;';
+                    content.style.marginLeft = '0';
                 } else {
                     sidebarToggle.innerHTML = '&lt;';
+                    content.style.marginLeft = sidebar.offsetWidth + 'px';
                 }
             });
 
