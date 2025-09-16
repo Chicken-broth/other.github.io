@@ -16,13 +16,15 @@
             font-family: 'Noto Sans JP', sans-serif;
             margin: 0;
             display: flex;
+            transition: padding-left 0.3s ease-in-out;
         }
-        nav {
+        nav#sidebar {
             width: 250px;
             border-right: 1px solid #ccc;
             padding: 20px;
             height: 100vh;
             background-color: #f8f9fa;
+            transition: transform 0.3s ease-in-out;
         }
         nav ul {
             list-style: none;
@@ -40,11 +42,28 @@
             background-color: #0F766E;
             color: white;
         }
-        main {
+        main#content {
             padding: 20px;
-            width: calc(100% - 290px);
+            width: 100%;
             overflow-y: auto;
             height: 100vh;
+        }
+        #sidebar-toggle {
+            position: fixed;
+            top: 16px;
+            left: 220px; /* sidebar width - button width/2 - padding */
+            z-index: 100;
+            background-color: #0F766E;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 18px;
+            line-height: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: left 0.3s ease-in-out;
         }
         .accordion-content {
             max-height: 0;
@@ -62,10 +81,18 @@
             background-color: #0D9488; /* teal-600 */
             color: white;
         }
+        /* Sidebar-closed state */
+        body.sidebar-closed nav#sidebar {
+            transform: translateX(-250px);
+        }
+        body.sidebar-closed #sidebar-toggle {
+            left: 16px;
+        }
     </style>
 </head>
 <body>
-    <nav>
+    <button id="sidebar-toggle">&lt;</button>
+    <nav id="sidebar">
         <ul>
             <li><a href="#" data-page="home">Home</a></li>
             <li><a href="#" data-page="process">Process</a></li>
@@ -77,7 +104,7 @@
             <li><a href="#" data-page="checklist">Check list</a></li>
         </ul>
     </nav>
-    <main id="content">
+    <main id="content" class="flex-grow">
         <!-- コンテンツはここに表示されます -->
     </main>
 
@@ -85,6 +112,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             const navLinks = document.querySelectorAll('nav a');
             const content = document.getElementById('content');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+
+            sidebarToggle.addEventListener('click', () => {
+                document.body.classList.toggle('sidebar-closed');
+                if (document.body.classList.contains('sidebar-closed')) {
+                    sidebarToggle.innerHTML = '&gt;';
+                } else {
+                    sidebarToggle.innerHTML = '&lt;';
+                }
+            });
 
             const initializePageScripts = (pageName) => {
                 // Common scripts (e.g., mobile menu, accordions)
